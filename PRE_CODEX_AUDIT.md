@@ -19,7 +19,7 @@
    - target has public attendance at that event.
 2. Defined guest mode separately from the explicit “Try demo as Karthik” flow.
 3. Added `DEMO_MODE` and mandatory `DEMO_SESSION_SECRET`.
-4. Specified a 12-hour HMAC-SHA-256 signed, HttpOnly demo cookie. It stores only compact IDs/status/preference overrides, never contact handles. Invalid/expired/tampered cookies resolve to guest.
+4. Specified a 12-hour HMAC-SHA-256 signed, HttpOnly demo cookie. The approved post-audit amendment below supersedes the original cookie payload design.
 5. Moved private contact handles to `lib/server/profile-private.ts` with a `server-only` guard.
 6. Corrected request `cr-03`: Imran → Asha for `ev-chess-03`; both have attendance.
 7. Corrected the demo walkthrough: Karthik is excluded from his own People results; Meera and Divya are visible; Nisha is hidden because her profile is not discoverable.
@@ -70,7 +70,17 @@ The separately supplied `Pasted text(2).txt` is a stale duplicate of the demo fi
 
 ## Package boundaries
 
-This starter package contains project instructions, fixtures, environment example and image assets. It does not contain a runnable Next.js scaffold, `package.json`, migrations, application components or an actual test runner. Codex must scaffold the application before the build commands can run.
+The original starter contained project instructions, fixtures, an environment example and image assets. The documentation pass adds a Supabase migration. The application scaffold, package manifest and test runner remain P2 work.
+
+## Approved post-audit decisions
+
+- Use Supabase PostgreSQL for temporary per-browser state. The signed cookie carries only the opaque session ID and issue/expiry times. The row stores the ID hash, mutable JSONB state, revision and timestamps. The session expires after 12 hours. Reset deletes the row and clears the cookie.
+- Put Supabase credentials in server-only `SUPABASE_URL` and `SUPABASE_SECRET_KEY`. Enable RLS and deny browser roles access to the table and write function. Supabase Auth and real registration are out of scope.
+- Validate each server mutation against the current state. The database atomically commits only against the validated revision, so stale writes cannot bypass duplicate or pending-limit checks. Reload and revalidate if the revision has changed.
+- Render a single authorized contact handle as server-rendered text in Connections after acceptance and owner opt-in. Keep handles exclusively in the private fixture and out of cookies, stored state, public JSON, client component props and client stores.
+- Allow Nisha in the selector and her own active profile. Suppress her from other personas' participant and People results while she is not discoverable.
+- Keep seeded Karthik → Meera acceptance and Vikram → Rohan accepted-without-contact examples. Demonstrate fresh creation by having Karthik join `ev-chess-01` and request Asha, then accept as Asha and view her shared contact as Karthik.
+- Use `npm.cmd` and `npx.cmd` in this Windows PowerShell environment. See README for Supabase setup and TEST_PLAN for release gates.
 
 ## Remaining manual tasks before public release
 

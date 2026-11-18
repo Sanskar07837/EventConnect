@@ -92,7 +92,9 @@ Primary modules:
 
 ## 3. Main user journey
 
-Landing → Explore as guest → choose Try demo as Karthik → open event → Interested/Going → choose attendance visibility and looking-for intent → see eligible opted-in participants → send request with note → switch persona → recipient accepts/declines → reveal contact only if the contact owner has explicitly enabled sharing.
+Landing → Explore as guest → choose Try demo as Karthik → join `ev-chess-01` → choose attendance visibility and looking-for intent → discover Asha → send a new request with a note → switch to Asha and accept → switch back to Karthik and see Asha's contact because her sharing is enabled.
+
+Keep the seeded Karthik → Meera pending request as a separate acceptance example. Keep the seeded Vikram → Rohan accepted request as the example where Rohan's disabled sharing hides his contact from Vikram.
 
 ## 4. Locked scope
 
@@ -140,11 +142,11 @@ Landing → Explore as guest → choose Try demo as Karthik → open event → I
 ### Private server-only fixture (`lib/server/profile-private.ts`)
 - `profile_private`: profile_id, contact_handle, share_contact_on_accept.
 - Must include a `server-only` guard and must only be imported by server-side code.
-- Never pass contact handles or the private fixture array to client components, page props, client-side stores or public JSON responses.
+- Keep private contact handles exclusively in this fixture. After the §8 check, render the single authorized handle as server-rendered text in Connections. Keep handles out of the cookie, database, client component props, client-side stores and public JSON. Never return the fixture array to the browser.
 - New profiles default `share_contact_on_accept = false`. Seeded personas may have explicit values to demonstrate both outcomes.
 
 ### Data access
-Use a repository interface in `lib/data/*`. For this 12-hour sprint, implement the fixture repository first. Supabase is optional and must not delay the end-to-end demo. Do not claim fixture/cookie state is production account persistence.
+Use a repository interface in `lib/data/*`. Fixtures supply baseline data. Supabase PostgreSQL stores temporary per-browser demo overrides in `demo_session_state`. Use a server-only client and apply authorization before accessing state. This demo provides no production account persistence.
 
 ## 7. Privacy and discovery rules (single source of truth)
 
@@ -177,6 +179,7 @@ A request is allowed only when:
 - Note is trimmed, non-empty and at most 280 characters.
 - Sender has fewer than five outgoing requests currently in `pending` state.
 - No prior request exists for the same unordered profile pair and event in any status. This simple one-request rule prevents repeated requests in the demo.
+- Validate against the merged fixtures and the current stored state, including seeded and new requests. Commit creation through the atomic revision-checked operation in §9. On conflict, reload and rerun every check before retrying.
 
 ### State transitions
 - `pending` → `accepted` or `declined` only by the recipient.
@@ -196,16 +199,16 @@ Acceptance alone never reveals contact. The owner can turn sharing off at any ti
 ## 9. Demo session and persistence
 
 - `DEMO_MODE=true` enables the public judge demo. `DEMO_MODE=false` disables persona switching and demo mutations.
-- `DEMO_SESSION_SECRET` is mandatory whenever `DEMO_MODE=true`; fail closed if missing or invalid.
+- `DEMO_SESSION_SECRET`, `SUPABASE_URL` and `SUPABASE_SECRET_KEY` are mandatory whenever `DEMO_MODE=true`. Require a secret generated from at least 32 random bytes. Fail closed for invalid configuration or unavailable session storage.
 - Generate a secret locally with: `node -e "console.log(require('node:crypto').randomBytes(32).toString('base64url'))"`.
 - Use an HMAC-SHA-256 signed cookie, verified server-side with constant-time signature comparison.
 - Cookie name: `eventconnect_demo`.
 - Cookie attributes: `HttpOnly`, `SameSite=Lax`, `Path=/`, `Secure` in production, `Max-Age=43200` (12 hours).
-- Payload may contain only: active persona id, issue/expiry timestamps, compact connection-status overrides and contact-sharing preference overrides. Validate every id and enum against the fixture before use.
-- Cookie signing provides integrity, not encryption. Do not put contact handles, emails, private profile details or secrets in it. Keep payload compact (target under 3 KB).
-- Server actions/route handlers update the signed cookie after persona switches, request status changes, contact preference changes and reset.
-- State survives navigation and refresh in the same browser for up to 12 hours. It is per-browser demo state, not shared globally and not production persistence. Expired, tampered or malformed cookies resolve to guest and are cleared.
-- “Reset demo” clears the cookie and returns to guest/fixture defaults.
+- The payload contains only a cryptographically random opaque session ID and issue/expiry timestamps. Signing provides integrity. Generate a fresh ID on explicit activation and keep the original 12-hour deadline across mutations and persona switches.
+- Store only the SHA-256 hash of the opaque ID as the key in `demo_session_state`, with JSONB state, revision, creation/update timestamps and expiry. The JSONB holds the active persona ID, attendance overrides, discoverability and contact-sharing overrides, new requests with notes, and request status overrides. Validate state and input against fixture IDs, supported enums and known stored requests.
+- Enable RLS and revoke table and mutation-function access from `PUBLIC`, `anon` and `authenticated`. Grant only the required operations to the server's `service_role`. Use server-only configuration. Keep private fixture handles out of the store and cookie. Keep request notes visible only to the parties, label demo inputs as fictional, and instruct users to omit personal contact information from notes.
+- For each mutation, validate the signed session and load its unexpired row. Apply business rules to the fixture-plus-state snapshot, then write through a single atomic PostgreSQL operation conditioned on the same session hash, unexpired row and exact revision. A stale revision commits nothing. Reload and rerun validations before retrying. This binds duplicate and pending-limit checks to the state on which creation commits.
+- Missing, expired, tampered or malformed cookies and missing/expired state resolve to guest. Clear invalid cookies on an outgoing response. “Reset demo” deletes the session row and clears the cookie. Expired rows are inaccessible to the app and eligible for database cleanup.
 
 ## 10. Seed data and event presentation
 
@@ -213,7 +216,7 @@ Acceptance alone never reveals contact. The owner can turn sharing off at any ti
 - 8 fictional 18+ personas, each visibly labelled as a fictional demo persona.
 - Events use `is_demo = true`, `verification_status = sample`, and null source/registration URLs.
 - Junior events use `juniorEventCounts` only. No person-linked attendance records for junior events.
-- In the supplied fixture, Nisha has public attendance on one event but `discoverable = false`; this is a deliberate negative privacy test. Her identity must not appear.
+- Nisha has public attendance on one event but `discoverable = false`. While false, suppress her from participant and People results for other personas. She may appear in the demo persona selector and her own active profile.
 - Every event with a null source or registration URL shows a clear absence state; do not fabricate links.
 - No scraping, public roster import or external data ingestion.
 - Poster extraction is optional, last, and creates an editable draft only.
@@ -224,7 +227,7 @@ Acceptance alone never reveals contact. The owner can turn sharing off at any ti
 - Tailwind CSS; use shadcn/ui selectively.
 - npm as the single package manager for this repository; commit `package-lock.json`. Do not mix npm/pnpm/yarn lockfiles.
 - Vercel deployment.
-- Fixture repository first; Supabase only if it is already configured and working without delaying the core journey.
+- Fixture-backed repository with Supabase PostgreSQL for demo sessions only. No Supabase Auth or real registration.
 - One modular application; no microservices.
 - Neighbourhood dropdown; Haversine straight-line distance optional.
 - Keep dependencies limited. Use current APIs for the installed Next.js version; in Next.js 16+ `Image` uses `preload`, while `priority` is deprecated.
@@ -239,7 +242,7 @@ Real-time chat, scraping, external roster import, payments, push notifications, 
 |---|---|
 | 0:00–1:00 | Inspect repo, create project, npm setup, design tokens, first local run |
 | 1:00–2:30 | Landing page and five-scene framework (hard stop at 90 min; ship 3 scenes if late) |
-| 2:30–3:30 | Fixture repository, server-only private contacts, signed demo session |
+| 2:30–3:30 | Fixture repository, server-only private contacts, signed demo session and Supabase state store |
 | 3:30–5:30 | Explore feed, filters, event detail and no-link states |
 | 5:30–6:30 | Persona switcher and Profile |
 | 6:30–8:30 | Attendance, visibility and event-scoped People |

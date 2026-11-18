@@ -11,11 +11,14 @@ These are acceptance tests for the first implementation. Tests must run through 
 | G-03 | Guest opens People, Connections or Profile | Shows a clear gate and “Try demo as Karthik”; no private data. |
 | G-04 | Select Try demo as Karthik | Server sets a valid signed cookie and Karthik becomes active persona. |
 | G-05 | Switch to Meera | Active persona changes after server validation. |
-| G-06 | Refresh/navigate after changing request state | Changes persist in the same browser while cookie is valid. |
+| G-06 | Refresh/navigate after changing request state | State persists in PostgreSQL for this browser; the cookie payload contains only opaque ID and timestamps. A second browser starts as guest. |
 | G-07 | Tamper with or expire cookie | Resolve to guest and clear invalid cookie. |
 | G-08 | DEMO_MODE=false | Persona switching and demo mutations are disabled. |
 | G-09 | DEMO_MODE=true but secret missing | Fail closed; do not start a demo session. |
-| G-10 | Reset demo | Cookie cleared and fixture defaults restored. |
+| G-10 | Reset demo | State row deleted, cookie cleared and fixture defaults restored. The old cookie cannot resume the session. |
+| G-11 | Missing Supabase config, unavailable store, absent row or expired row | Demo access and mutations fail closed. An expired row remains unusable before cleanup. |
+| G-12 | Call table and mutation RPC as `anon` or `authenticated` | Access denied. RLS is enabled and browser roles have no table or function grants. |
+| G-13 | Inspect cookie and stored row after switching and editing preferences | Cookie contains only ID and timestamps. Row stores the hash and validated state; original expiry is unchanged. Neither contains private fixture handles. |
 
 ## B. Event fixture and routes
 
@@ -43,6 +46,7 @@ A named target is visible only when all are true: active 18+ viewer, viewer atte
 | P-07 | Active persona views People | The active persona is never included in their own recommendations. |
 | P-08 | Target profile is not discoverable | Target hidden even if event visibility is public. |
 | P-09 | Target event visibility is anonymous | Target hidden even if profile discoverability is true. |
+| P-10 | Select Nisha or browse as another persona | Selector includes Nisha and she sees her own profile. Other personas receive no participant or People result for her while discoverability is false. |
 
 ## D. Requests and state transitions
 
@@ -59,10 +63,13 @@ A named target is visible only when all are true: active 18+ viewer, viewer atte
 | R-09 | Duplicate pair/event request | Rejected, regardless of previous status in the demo fixture. |
 | R-10 | Sender tries to accept own request | Rejected. |
 | R-11 | Non-recipient tries to accept/decline | Rejected. |
-| R-12 | Recipient accepts/declines pending request | State changes and persists in demo cookie. |
+| R-12 | Recipient accepts/declines pending request | State changes and persists in PostgreSQL across refresh and persona switches. |
 | R-13 | Sender cancels pending request | State changes to cancelled. |
 | R-14 | Attempt to change terminal status | Rejected. |
 | R-15 | Request `cr-03` | Sender Imran and recipient Asha both attend `ev-chess-03`. |
+| R-16 | Concurrent same unordered pair/event creation from the same revision | Exactly one request commits. The losing write reloads and rejects the duplicate. |
+| R-17 | Concurrent eligible creations with four outgoing pending requests | At most one new request commits. The other reloads and rejects the sixth pending request. |
+| R-18 | Concurrent request creation and attendance or preference mutation | A stale revision cannot overwrite newer state. Revalidate all request conditions before retrying. |
 
 ## E. Contact reveal
 
@@ -75,6 +82,7 @@ A named target is visible only when all are true: active 18+ viewer, viewer atte
 | C-05 | Owner switches sharing on | Contact visible only for accepted request and valid handle. |
 | C-06 | Guest asks for contact | Rejected / no data. |
 | C-07 | Client requests private fixture directly | No client route or bundle exposes it. |
+| C-08 | Inspect an authorized Connections response and public surfaces | Only the permitted handle is rendered as text. No contact fixture or handles appear in public JSON, client component props, client stores, cookie or database. |
 
 ## F. Fixture integrity
 
@@ -106,8 +114,8 @@ A named target is visible only when all are true: active 18+ viewer, viewer atte
 
 ## H. Build checks
 
-- `npm install` completes and `package-lock.json` is committed.
-- `npm run dev` starts successfully.
+- `npm.cmd install` completes and `package-lock.json` is committed.
+- `npm.cmd run dev` starts successfully.
 - Lint and TypeScript checks pass.
-- `npm run build` succeeds.
-- Main demo flow is tested on desktop and mobile.
+- `npm.cmd run build` succeeds.
+- On desktop and mobile, Karthik joins `ev-chess-01`, discovers Asha, sends a fresh request, switches to Asha to accept, then switches back and sees her contact. Also verify the seeded Karthik → Meera acceptance and the Vikram → Rohan accepted request with no Rohan contact.
