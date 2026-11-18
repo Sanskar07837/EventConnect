@@ -9,8 +9,8 @@ type Props = { personaId: string } & (
   | { kind: "sharing"; enabled: boolean }
 );
 
-const primary = "min-h-11 rounded-md bg-emerald-900 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-60";
-const secondary = "min-h-11 rounded-md border border-stone-400 bg-white px-4 py-2 text-sm font-semibold hover:bg-stone-100 disabled:opacity-60";
+const primary = "app-button app-button-primary";
+const secondary = "app-button";
 
 export default function ConnectionForm(props: Props) {
   const action = props.kind === "send" ? sendConnectionAction
@@ -31,10 +31,10 @@ export default function ConnectionForm(props: Props) {
               required
               maxLength={280}
               rows={2}
-              className="min-w-0 rounded-md border border-stone-400 bg-white px-3 py-2 font-normal"
+              className="app-input min-w-0 font-normal"
             />
           </label>
-          <p className="text-xs text-stone-600">Up to 280 characters. Use fictional information and omit contact details.</p>
+          <p className="text-xs app-muted">Up to 280 characters. Use fictional information and omit contact details.</p>
           <button type="submit" disabled={pending} className={`${primary} justify-self-start`}>Send request</button>
         </div>
       )}
@@ -59,8 +59,8 @@ export default function ConnectionForm(props: Props) {
           </button>
         </>
       )}
-      {pending && <p role="status" className="mt-2 text-sm text-stone-700">Updating demo…</p>}
-      {error && <p role="alert" className="mt-2 text-sm font-medium text-red-800">{error}</p>}
+      {pending && <p role="status" className="app-feedback mt-2">Updating demo…</p>}
+      {error && <p role="alert" className="app-feedback mt-2">{error}</p>}
     </form>
   );
 }

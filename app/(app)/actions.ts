@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { fixtureRepository } from "../../lib/data/fixture-repository";
 import type { ConnectionResult } from "../../lib/data/repository";
+import { isAvatarId } from "../../lib/profile/avatars";
 import { resetDemoSession, startDemoSession, switchDemoPersona } from "../../lib/server/demo-session";
 
 export async function startDemoAction() {
@@ -98,4 +99,24 @@ export async function changeContactSharingAction(_previous: string, formData: Fo
   return finishConnectionAction(await fixtureRepository.changeContactSharing(
     enabled === "true", formData.get("expectedPersona"),
   ));
+}
+
+export async function changeAvatarAction(
+  _previous: { ok: boolean; message: string } | null,
+  formData: FormData,
+): Promise<{ ok: boolean; message: string }> {
+  const choice = formData instanceof FormData ? formData.get("avatar") : null;
+  if (choice !== "" && !isAvatarId(choice)) return { ok: false, message: "Choose an avatar from the list." };
+
+  const result = await fixtureRepository.changeAvatar(choice || null, formData.get("expectedPersona"));
+  if (!result.ok) {
+    if (result.reason === "conflict") return { ok: false, message: "Your demo changed. Refresh the page and try again." };
+    if (result.reason === "guest") return { ok: false, message: "Start a demo to save an avatar." };
+    return { ok: false, message: "Couldn’t save your avatar. Try again." };
+  }
+
+  revalidatePath("/profile");
+  revalidatePath("/people");
+  revalidatePath("/events/[id]", "page");
+  return { ok: true, message: "Avatar saved for this demo persona." };
 }

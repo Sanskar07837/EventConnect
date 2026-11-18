@@ -1,65 +1,104 @@
-const assets = {
-  "01": ["chess-overhead", "Hands moving wooden pieces on a chessboard"],
-  "02": ["chess-clock-detail", "A chess clock beside a player's hand and scoresheet"],
-  "04": ["sticky-note-wall", "A wall of colourful sticky notes and interface sketches"],
-  "05": ["filter-coffee", "South Indian filter coffee in a brass tumbler and dabara"],
-  "06": ["vidhana-soudha-dusk", "An illustrated view of Vidhana Soudha in the late afternoon"],
-  "07": ["glasshouse", "Sunlight through the arched roof of a garden glasshouse"],
-  "08": ["metro-platform", "A metro train alongside a platform"],
-  "09": ["park-morning", "Distant walkers on a tree-lined park path"],
-  "10": ["workshop-room", "Workshop attendees facing a whiteboard"],
-  "11": ["blank-lanyards", "Blank name badges and lanyards laid out on a table"],
-  "12": ["map-pins-flatlay", "Coloured pins and a pen on a generic paper map"],
+const candidates = {
+  "bengaluru-skyline": [800, 800, "The Bengaluru skyline at golden hour"],
+  "chess-community-overhead": [2048, 1529, "Players gathered around a wooden chessboard"],
+  "chess-hand-move": [1105, 830, "A hand moving a chess piece on a sunlit board"],
+  "conference-auditorium": [964, 698, "An audience facing a warmly lit auditorium stage"],
+  "library-reading-room": [1201, 804, "A library reading room with a timber ceiling and large windows"],
+  "metro-platform": [2048, 1529, "A metro train alongside a busy platform"],
+  "vidhana-soudha-golden-hour": [2048, 1529, "Vidhana Soudha beneath a golden-hour sky"],
+  "vintage-world-map": [1201, 811, "A vintage world map spread across a desk"],
+  "workshop-brainstorm": [1233, 802, "Two collaborators sorting ideas on a sticky-note wall"],
+  "workshop-idea-wall": [2048, 1529, "A wall of colourful sticky notes and interface sketches"],
 } as const;
 
-type Slot = keyof typeof assets;
+type Candidate = keyof typeof candidates;
 
-function tile(slot: Slot, mobile = true) {
-  const [name, alt] = assets[slot];
-  const path = `/landing/slot-${slot}-${name}`;
+export type LandingTile = {
+  id: string;
+  alt: string;
+  mobile: boolean;
+  image: { src: string; width: number; height: number; sizes: string }
+    | { mobileSrc: string; desktopSrc: string };
+};
 
+function tile(id: Candidate, desktopWidth: string, mobileWidth?: string): LandingTile {
+  const [width, height, alt] = candidates[id];
   return {
-    slot,
+    id,
     alt,
-    mobile,
-    mobileSrc: `${path}-800.webp`,
-    desktopSrc: `${path}-1600.webp`,
+    mobile: mobileWidth !== undefined,
+    image: {
+      src: `/landing/candidates/${id}.webp`,
+      width,
+      height,
+      sizes: mobileWidth ? `${desktopMedia} ${desktopWidth}, ${mobileWidth}` : desktopWidth,
+    },
   };
+}
+
+function legacyTile(slot: string, id: string, alt: string, mobile = false): LandingTile {
+  const path = `/landing/slot-${slot}-${id}`;
+  return { id, alt, mobile, image: { mobileSrc: `${path}-800.webp`, desktopSrc: `${path}-1600.webp` } };
 }
 
 export const desktopMedia = "(min-width: 768px) and (min-height: 540px)";
 export const sceneInterval = 2500;
 export const transitionDuration = 460;
+export const openingImage = "vidhana-soudha-golden-hour";
 
 export const scenes = [
   {
     id: "bengaluru",
     title: "Bengaluru atmosphere",
-    transition: "scale",
-    tiles: [tile("06"), tile("07", false), tile("08"), tile("09", false), tile("05", false)],
+    transition: "collage",
+    tiles: [
+      tile(openingImage, "42vw", "92vw"),
+      legacyTile("07", "glasshouse", "Sunlight through the arched roof of a garden glasshouse"),
+      tile("metro-platform", "41vw", "78vw"),
+      legacyTile("09", "park-morning", "Distant walkers on a tree-lined park path"),
+      legacyTile("05", "filter-coffee", "South Indian filter coffee in a brass tumbler and dabara"),
+    ],
   },
   {
     id: "chess",
     title: "Over-the-board chess",
-    transition: "circle",
-    tiles: [tile("01"), tile("02"), tile("11", false)],
+    transition: "collage",
+    tiles: [
+      tile("chess-community-overhead", "53vw", "90vw"),
+      tile("chess-hand-move", "43vw", "84vw"),
+      tile("library-reading-room", "32vw"),
+    ],
   },
   {
     id: "hackathon",
-    title: "Hackathon teamwork",
-    transition: "fan",
-    tiles: [tile("04"), tile("10"), tile("11", false)],
+    title: "Collaborative building",
+    transition: "collage",
+    tiles: [
+      tile("workshop-idea-wall", "51vw", "90vw"),
+      tile("workshop-brainstorm", "51vw", "86vw"),
+      tile("conference-auditorium", "32vw"),
+    ],
   },
   {
     id: "workshop",
     title: "Building and workshops",
     transition: "bleed",
-    tiles: [tile("10")],
+    tiles: [legacyTile("10", "workshop-room", "Workshop attendees facing a whiteboard", true)],
   },
   {
     id: "community",
     title: "Community",
-    transition: "grid",
-    tiles: [tile("09", false), tile("11", false), tile("12"), tile("05")],
+    transition: "collage",
+    tiles: [
+      tile("bengaluru-skyline", "42vw"),
+      tile("conference-auditorium", "33vw"),
+      tile("vintage-world-map", "45vw", "89vw"),
+      tile("library-reading-room", "44vw", "78vw"),
+    ],
   },
-] as const;
+] as const satisfies readonly {
+  id: string;
+  title: string;
+  transition: "collage" | "bleed";
+  tiles: readonly LandingTile[];
+}[];

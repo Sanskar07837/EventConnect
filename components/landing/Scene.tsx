@@ -1,8 +1,9 @@
 "use client";
 
+import { getImageProps } from "next/image";
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode, type Ref } from "react";
 import Controls from "./Controls";
-import { desktopMedia, sceneInterval, scenes, transitionDuration } from "./scenes";
+import { desktopMedia, openingImage, sceneInterval, scenes, transitionDuration, type LandingTile } from "./scenes";
 import styles from "./landing.module.css";
 
 type Frame = { index: number; sequence: number };
@@ -31,6 +32,45 @@ function usePlaybackEnvironment() {
   return environment;
 }
 
+/* eslint-disable @next/next/no-img-element -- Native picture delivery selects the optimized candidate or exact legacy variant. */
+function SceneTile({ tile, eager, hero, index, exitIndex }: {
+  tile: LandingTile;
+  eager: boolean;
+  hero: boolean;
+  index: number;
+  exitIndex: number;
+}) {
+  const loading = eager ? "eager" : "lazy";
+  const legacy = "desktopSrc" in tile.image ? tile.image : null;
+  const candidate = "src" in tile.image ? getImageProps({
+    ...tile.image, alt: tile.alt, loading,
+    fetchPriority: hero ? "high" : undefined,
+    decoding: hero ? undefined : "async",
+  }).props : null;
+
+  // A desktop-only tile has no fallback URL, so it cannot fetch on mobile.
+  return (
+    <picture
+      className={styles.tile}
+      data-image={tile.id}
+      data-desktop-only={!tile.mobile || undefined}
+      style={{ "--tile-delay": `${index * 26}ms`, "--tile-exit-delay": `${140 + exitIndex * 24}ms` } as CSSProperties}
+    >
+      {legacy && <source media={desktopMedia} srcSet={legacy.desktopSrc} width={1600} height={1195} />}
+      {candidate && !tile.mobile && (
+        <source media={desktopMedia} srcSet={candidate.srcSet} sizes={candidate.sizes} />
+      )}
+      {legacy && (
+        <img src={tile.mobile ? legacy.mobileSrc : undefined} width={800} height={597} alt={tile.alt} loading={loading} decoding="async" />
+      )}
+      {candidate && (
+        <img {...candidate} alt={tile.alt} {...(!tile.mobile && { src: undefined, srcSet: undefined, sizes: undefined })} />
+      )}
+    </picture>
+  );
+}
+/* eslint-enable @next/next/no-img-element */
+
 function SceneLayer({ frame, phase, layerRef, onSettled }: {
   frame: Frame;
   phase: Phase;
@@ -53,27 +93,17 @@ function SceneLayer({ frame, phase, layerRef, onSettled }: {
         if (event.target === event.currentTarget) onSettled?.();
       }}
     >
-      {scene.tiles.map((tile) => {
-        const hero = frame.sequence === 0 && tile.slot === "06";
+      {scene.tiles.map((tile, index) => {
+        const hero = frame.sequence === 0 && tile.id === openingImage;
         return (
-          <picture
-            key={tile.slot}
-            className={styles.tile}
-            data-slot={tile.slot}
-            data-desktop-only={!tile.mobile || undefined}
-          >
-            <source media={desktopMedia} srcSet={tile.desktopSrc} width={1600} height={1195} />
-            {/* Use a native picture to serve the exact local variant and omit the mobile fallback for desktop-only tiles. */}
-            <img
-              src={tile.mobile ? tile.mobileSrc : undefined}
-              width={800}
-              height={597}
-              alt={tile.alt}
-              loading={hero || frame.sequence > 0 ? "eager" : "lazy"}
-              fetchPriority={hero ? "high" : undefined}
-              decoding={hero ? undefined : "async"}
-            />
-          </picture>
+          <SceneTile
+            key={tile.id}
+            tile={tile}
+            index={index}
+            exitIndex={scene.tiles.length - index - 1}
+            eager={hero || frame.sequence > 0}
+            hero={hero}
+          />
         );
       })}
     </div>

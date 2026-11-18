@@ -1,7 +1,9 @@
 .landing {
-  --paper: #f5f0e6;
-  --ink: #222e27;
-  --green: #223b30;
+  --paper: #f4f0e7;
+  --ink: #292b27;
+  --green: #20372e;
+  --green-hover: #304b3e;
+  --sand: #ddd2bf;
   --gutter: clamp(1rem, 3.1vw, 3rem);
   color: var(--ink);
   background: var(--paper);
@@ -26,10 +28,13 @@
   position: absolute;
   display: block;
   overflow: hidden;
-  background: #d6ceba;
+  background: var(--sand);
   inset: var(--top, auto) var(--right, auto) var(--bottom, auto) var(--left, auto);
   width: var(--w, auto);
   height: var(--h, auto);
+  z-index: var(--order, 0);
+  rotate: var(--angle, 0deg);
+  box-shadow: 0 .55rem 1.4rem #3933261f, 0 .1rem .28rem #3933261a;
 }
 
 .tile img {
@@ -38,6 +43,9 @@
   height: 100%;
   object-fit: cover;
   object-position: var(--crop, right bottom);
+  filter: saturate(.98);
+  scale: var(--zoom, 1);
+  transform-origin: right bottom;
 }
 
 .tile[data-desktop-only] {
@@ -54,10 +62,11 @@
   padding: .45rem clamp(.5rem, 2vw, 1.75rem) .7rem;
   background: var(--paper);
   text-align: center;
-  pointer-events: none;
+  cursor: text;
 }
 
 .wordmark h1 {
+  color: var(--green);
   font-family: Georgia, "Times New Roman", serif;
   font-size: clamp(2.35rem, 10vw, 8.5rem);
   font-weight: 400;
@@ -85,39 +94,39 @@
   padding: .65rem 1rem;
   background: var(--green);
   color: #fffaf0;
+  box-shadow: inset 0 1px #ffffff38, 0 .25rem .8rem #26201725;
   text-decoration: none;
   font-size: .85rem;
   font-weight: 650;
 }
 
 .explore:hover {
-  background: #345643;
+  background: var(--green-hover);
 }
 
 .playback {
   position: absolute;
   z-index: 3;
-  left: 50%;
+  left: max(var(--gutter), env(safe-area-inset-left));
   bottom: max(var(--gutter), env(safe-area-inset-bottom));
   display: grid;
   width: clamp(3.5rem, 5vw, 4.25rem);
   aspect-ratio: 1;
   place-items: center;
-  translate: -50% 0;
   border-radius: 50%;
-  background: #b44d2f;
-  color: #fff;
-  box-shadow: 0 .25rem .8rem #43251d45;
+  background: var(--green);
+  color: var(--paper);
+  box-shadow: inset 0 1px #f4f0e754, 0 .25rem .8rem #20372e38;
   cursor: pointer;
 }
 
 .playback:hover {
-  background: #9b3d24;
+  background: var(--green-hover);
 }
 
 .playback:active {
   scale: .94;
-  box-shadow: 0 .1rem .35rem #43251d45;
+  box-shadow: 0 .1rem .35rem #20372e38;
 }
 
 .playIcon,
@@ -158,10 +167,10 @@
 .disclosure {
   position: absolute;
   z-index: 3;
-  left: max(var(--gutter), env(safe-area-inset-left));
+  right: max(var(--gutter), env(safe-area-inset-right));
   bottom: max(var(--gutter), env(safe-area-inset-bottom));
   padding: .3rem .45rem;
-  background: var(--paper);
+  background: #eee7d9;
   font-size: .68rem;
   white-space: nowrap;
 }
@@ -170,78 +179,58 @@
   opacity: 0;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .playback {
-    display: none;
-  }
+.layer[data-scene="bengaluru"] [data-image="vidhana-soudha-golden-hour"] {
+  --top: 11%; --left: 4%; --w: 92%; --h: 29%;
+  --angle: -.25deg;
 }
 
-.layer[data-scene="bengaluru"] [data-slot="06"] {
-  --top: 12%; --left: 4%; --w: 92%; --h: 29%;
-  --crop: right 96%;
+.layer[data-scene="bengaluru"] [data-image="metro-platform"] {
+  --right: 4%; --bottom: 14%; --w: 78%; --h: 29%;
+  --angle: .35deg;
 }
 
-.layer [data-slot="06"] img {
-  /* Trim the far-left edge while keeping the lower-right provenance mark. */
-  scale: 1.04;
-  transform-origin: right bottom;
+.layer[data-scene="chess"] [data-image="chess-community-overhead"] {
+  --top: 7%; --left: 1%; --w: 90%; --h: 33%;
+  --angle: -.6deg;
 }
 
-.layer[data-scene="bengaluru"] [data-slot="08"] {
-  --right: 4%; --bottom: 14%; --w: 73%; --h: 28%;
-  --crop: 98% bottom;
+.layer[data-scene="chess"] [data-image="chess-hand-move"] {
+  --right: 0; --bottom: 12%; --w: 84%; --h: 32%;
+  --crop: 48% 54%;
 }
 
-.layer[data-scene="chess"] [data-slot="01"] {
-  --top: 5%; --left: 0; --w: 82%; --h: 37%;
+.layer[data-scene="hackathon"] [data-image="workshop-idea-wall"] {
+  --top: 9%; --left: 0; --w: 90%; --h: 31%;
+  --angle: -.4deg;
 }
 
-.layer[data-scene="chess"] [data-slot="02"] {
-  --right: 0; --bottom: 11%; --w: 83%; --h: 31%;
+.layer[data-scene="hackathon"] [data-image="workshop-brainstorm"] {
+  --right: 1%; --bottom: 13%; --w: 86%; --h: 30%;
+  --crop: 53% 38%;
 }
 
-.layer[data-scene="hackathon"] [data-slot="04"] {
-  --top: 11%; --left: 0; --w: 89%; --h: 31%;
-}
-
-.layer[data-scene="hackathon"] [data-slot="10"] {
-  --right: 0; --bottom: 12%; --w: 85%; --h: 30%;
-  --crop: 97% 93%;
-}
-
-.layer[data-scene="workshop"] [data-slot="10"] {
+.layer[data-scene="workshop"] [data-image="workshop-room"] {
   inset: 0;
-  --crop: 96% bottom;
+  --crop: 48% bottom;
+  --zoom: 1.08;
+  box-shadow: none;
 }
 
-.layer [data-slot="10"] img {
-  scale: 1.12;
-  transform-origin: right bottom;
+.layer[data-scene="community"] [data-image="vintage-world-map"] {
+  --top: 9%; --right: 0; --w: 89%; --h: 32%;
+  --crop: 48% 57%;
+  --angle: .65deg;
 }
 
-.layer[data-scene="workshop"] [data-slot="10"] img {
-  scale: 1.08;
-}
-
-.layer[data-scene="community"] [data-slot="12"] {
-  --top: 11%; --right: 0; --w: 89%; --h: 31%;
-}
-
-.layer[data-scene="community"] [data-slot="05"] {
-  --left: 4%; --bottom: 12%; --w: 72%; --h: 31%;
+.layer[data-scene="community"] [data-image="library-reading-room"] {
+  --left: 4%; --bottom: 12%; --w: 78%; --h: 31%;
+  --crop: 45% 48%;
+  --angle: -.6deg;
 }
 
 @media (min-aspect-ratio: 1/1) and (max-height: 539px) {
-  .layer[data-scene="bengaluru"] [data-slot="06"] {
-    --w: min(92%, 45svh);
-  }
-
-  .layer[data-scene="bengaluru"] [data-slot="08"] {
-    --w: min(73%, 46svh);
-  }
-
-  .layer[data-scene="hackathon"] [data-slot="10"] {
-    --w: min(85%, 48svh);
+  .layer[data-transition="collage"] .tile {
+    max-width: 58svh;
   }
 }
 
@@ -250,77 +239,102 @@
     display: block;
   }
 
+  .wordmark {
+    display: flex;
+    min-height: 20svh;
+    width: 53.4%;
+    flex-direction: column;
+    justify-content: center;
+  }
+
   .wordmark h1 {
     font-size: clamp(4rem, 9vw, 8.5rem);
   }
 
-  .layer[data-scene="bengaluru"] [data-slot="06"] {
-    /* Limit the width on wide screens to keep the dome and lower-right mark in frame. */
-    --top: 0; --left: 7%; --w: min(43%, 66svh); --h: 42%;
-    --crop: right 94%;
+  .layer[data-scene="bengaluru"] [data-image="vidhana-soudha-golden-hour"] {
+    --top: .5%; --left: 7%; --w: 41.4%; --h: 41%;
+    --angle: 0deg;
   }
 
-  .layer[data-scene="bengaluru"] [data-slot="07"] {
-    --top: 10%; --right: 10%; --w: 31%; --h: 39%;
+  .layer[data-scene="bengaluru"] [data-image="glasshouse"] {
+    --top: 10.4%; --left: 59.1%; --w: 31.1%; --h: 39.2%;
   }
 
-  .layer[data-scene="bengaluru"] [data-slot="08"] {
-    --right: 0; --bottom: 8%; --w: 41%; --h: 37%;
-    --crop: right 94%;
+  .layer[data-scene="bengaluru"] [data-image="metro-platform"] {
+    --right: 0; --bottom: 7.3%; --w: 40.9%; --h: 37.1%;
+    --angle: 0deg;
   }
 
-  .layer[data-scene="bengaluru"] [data-slot="09"] {
-    z-index: 1;
-    --left: 0; --bottom: 12%; --w: 34%; --h: 37%;
+  .layer[data-scene="bengaluru"] [data-image="park-morning"] {
+    --left: 0; --bottom: 11.4%; --w: 34.1%; --h: 37.1%;
+    --order: 1;
   }
 
-  .layer[data-scene="bengaluru"] [data-slot="05"] {
-    --left: 30%; --bottom: 4%; --w: 19%; --h: 24%;
+  .layer[data-scene="bengaluru"] [data-image="filter-coffee"] {
+    --left: 30.1%; --bottom: 3.2%; --w: 19.1%; --h: 24.2%;
   }
 
-  .layer[data-scene="chess"] [data-slot="01"] {
-    --top: 5%; --left: 5%; --w: 53%; --h: 35%;
+  .layer[data-scene="chess"] [data-image="chess-community-overhead"] {
+    --top: 4%; --left: 5%; --w: 53%; --h: 35%;
   }
 
-  .layer[data-scene="chess"] [data-slot="02"] {
+  .layer[data-scene="chess"] [data-image="chess-hand-move"] {
     --right: 6%; --bottom: 8%; --w: 43%; --h: 46%;
+    --crop: 53% 52%; --angle: .45deg;
   }
 
-  .layer[data-scene="chess"] [data-slot="11"] {
-    --left: 18%; --bottom: 5%; --w: 27%; --h: 31%;
+  .layer[data-scene="chess"] [data-image="library-reading-room"] {
+    --left: 22%; --bottom: 5%; --w: 32%; --h: 33%;
+    --crop: 57% 42%; --order: 1; --angle: -1.5deg;
   }
 
-  .layer[data-scene="hackathon"] [data-slot="04"] {
-    --top: 5%; --left: 12%; --w: 51%; --h: 35%;
+  .layer[data-scene="hackathon"] [data-image="workshop-idea-wall"] {
+    --top: 5%; --left: 12%; --w: 51%; --h: 34%;
   }
 
-  .layer[data-scene="hackathon"] [data-slot="10"] {
-    --right: 2%; --bottom: 9%; --w: 53%; --h: 48%;
-    --crop: right 92%;
+  .layer[data-scene="hackathon"] [data-image="workshop-brainstorm"] {
+    --right: 3%; --bottom: 8%; --w: 51%; --h: 47%;
+    --crop: 52% 33%; --angle: .65deg;
   }
 
-  .layer[data-scene="hackathon"] [data-slot="11"] {
-    --left: 6%; --bottom: 6%; --w: 30%; --h: 32%;
+  .layer[data-scene="hackathon"] [data-image="conference-auditorium"] {
+    --left: 17%; --bottom: 6%; --w: 32%; --h: 32%;
+    --crop: 63% 58%; --angle: -1.15deg;
   }
 
-  .layer[data-scene="workshop"] [data-slot="10"] {
-    --crop: right 94%;
+  .layer[data-scene="workshop"] [data-image="workshop-room"] {
+    --crop: right bottom;
   }
 
-  .layer[data-scene="community"] [data-slot="09"] {
-    --top: 5%; --left: 5%; --w: 41%; --h: 34%;
+  .layer[data-scene="community"] [data-image="bengaluru-skyline"] {
+    --top: 6%; --left: 5%; --w: 42%; --h: 35%;
+    --crop: 52% 53%; --angle: -.45deg;
   }
 
-  .layer[data-scene="community"] [data-slot="11"] {
+  .layer[data-scene="community"] [data-image="conference-auditorium"] {
     --left: 13%; --bottom: 5%; --w: 33%; --h: 41%;
+    --crop: 47% 43%; --angle: -1deg;
   }
 
-  .layer[data-scene="community"] [data-slot="12"] {
-    --top: 10%; --right: 6%; --w: 45%; --h: 36%;
+  .layer[data-scene="community"] [data-image="vintage-world-map"] {
+    --top: 9%; --right: 6%; --w: 45%; --h: 36%;
   }
 
-  .layer[data-scene="community"] [data-slot="05"] {
-    --left: auto; --right: 15%; --bottom: 9%; --w: 40%; --h: 39%;
+  .layer[data-scene="community"] [data-image="library-reading-room"] {
+    --left: auto; --right: 9%; --bottom: 7%; --w: 47%; --h: 38%;
+    --order: 1; --angle: .75deg;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .layer {
+    cursor: url("/landing/cursor-glass.svg") 4 3, auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .playback {
+    display: none;
   }
 }
 
@@ -335,62 +349,53 @@
   }
 
   .layer[data-phase="incoming"] {
-    animation: appear var(--scene-transition) ease both;
+    animation: crossfade var(--scene-transition) ease both;
   }
 
-  .layer[data-transition="circle"][data-phase="incoming"] {
-    animation-name: circle-reveal;
+  .layer[data-transition="collage"][data-phase="incoming"] .tile {
+    animation: place-print calc(var(--scene-transition) - var(--tile-delay))
+      cubic-bezier(.2, .72, .3, 1) var(--tile-delay) both;
   }
 
-  .layer[data-transition="fan"][data-phase="incoming"] .tile {
-    animation: fan-in var(--scene-transition) cubic-bezier(.2, .75, .3, 1) both;
+  .layer[data-transition="collage"][data-phase="incoming"] .tile:nth-child(even) {
+    --travel-x: 1rem; --travel-y: .9rem;
   }
 
-  .layer[data-transition="fan"][data-phase="incoming"] .tile:nth-child(even) {
-    --turn: 5deg;
-    --travel: 2rem;
+  .layer[data-transition="collage"][data-phase="incoming"] .tile:first-child {
+    --travel-x: -.55rem; --travel-y: .45rem;
   }
 
-  .layer[data-transition="scale"][data-phase="outgoing"] [data-slot="06"] {
-    z-index: 2;
-    transform-origin: 35% 28%;
-    animation: expand var(--scene-transition) cubic-bezier(.3, .1, .2, 1) both;
+  .layer[data-transition="collage"][data-phase="outgoing"] .tile {
+    animation: lift-print calc(var(--scene-transition) - var(--tile-exit-delay))
+      ease-in var(--tile-exit-delay) both;
+  }
+
+  .layer[data-transition="collage"][data-phase="outgoing"] .tile:nth-child(even) {
+    --exit-x: .35rem;
   }
 
   .layer[data-transition="bleed"][data-phase="incoming"] .tile {
-    animation: full-bleed var(--scene-transition) ease-out both;
-  }
-
-  .layer[data-transition="grid"][data-phase="incoming"] .tile {
-    animation: settle var(--scene-transition) ease-out both;
+    animation: settle-bleed var(--scene-transition) cubic-bezier(.2, .72, .3, 1) both;
+    transform-origin: right bottom;
   }
 }
 
-@keyframes appear {
+@keyframes crossfade {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
-@keyframes circle-reveal {
-  from { clip-path: circle(0% at 33% 32%); }
-  to { clip-path: circle(125% at 33% 32%); }
-}
-
-@keyframes fan-in {
-  from { transform: translate(var(--travel, -2rem), 1.5rem) rotate(var(--turn, -6deg)); opacity: 0; }
-  to { transform: none; opacity: 1; }
-}
-
-@keyframes expand {
-  to { transform: scale(3.15); }
-}
-
-@keyframes full-bleed {
-  from { transform: scale(1.04); }
+@keyframes place-print {
+  from { transform: translate(var(--travel-x, -1.1rem), var(--travel-y, .75rem)) scale(.982); }
   to { transform: none; }
 }
 
-@keyframes settle {
-  from { transform: translateY(.8rem); opacity: 0; }
-  to { transform: none; opacity: 1; }
+@keyframes lift-print {
+  from { opacity: 1; transform: none; }
+  to { opacity: .88; transform: translate(var(--exit-x, -.35rem), -.3rem) scale(1.012); }
+}
+
+@keyframes settle-bleed {
+  from { transform: scale(1.035); }
+  to { transform: none; }
 }

@@ -1,0 +1,250 @@
+.page {
+  --cream: #f5f0e6;
+  --surface: #fbf9f4;
+  --forest: #20372e;
+  --ink: #292b27;
+  --border: #e5ddcf;
+  --sand: #eae1d1;
+  --brass: #6e5229;
+  --muted: #585950;
+  --error: #872f28;
+  --display: Georgia, "Times New Roman", serif;
+  min-height: 100svh;
+  padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right))
+    max(1.5rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+  background: var(--cream);
+  color: var(--ink);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+
+.header,
+.layout {
+  width: min(100%, 58rem);
+  margin-inline: auto;
+}
+
+.header {
+  border-bottom: 1px solid var(--border);
+  padding-block: .25rem 1rem;
+}
+
+.brand {
+  display: inline-block;
+  color: var(--forest);
+  font-family: var(--display);
+  font-size: 1.65rem;
+  letter-spacing: -.055em;
+  line-height: 1.2;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+  padding-top: clamp(1.25rem, 7vh, 4.5rem);
+}
+
+.card,
+.entry {
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  padding: clamp(1rem, 4vw, 2.5rem);
+}
+
+.card {
+  background: var(--surface);
+  box-shadow: 0 1px 2px #392e1610, 0 14px 40px #392e1609;
+}
+
+.cardHeading h1,
+.entry h2 {
+  color: var(--forest);
+  font-family: var(--display);
+  font-weight: 400;
+  letter-spacing: -.05em;
+  line-height: 1.02;
+}
+
+.cardHeading h1 {
+  font-size: clamp(2.5rem, 7vw, 3.65rem);
+}
+
+.cardHeading p,
+.entry p,
+.switchView {
+  margin-top: .75rem;
+  color: var(--muted);
+  font-size: .9rem;
+  line-height: 1.55;
+}
+
+.fields {
+  display: grid;
+  gap: .85rem;
+  margin-top: 1.4rem;
+}
+
+.field label {
+  display: block;
+  margin-bottom: .35rem;
+  font-size: .875rem;
+  font-weight: 600;
+}
+
+.field input {
+  display: block;
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid #9b9180;
+  border-radius: .5rem;
+  padding: .55rem .7rem;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+}
+
+.field input[aria-invalid="true"] {
+  border-color: var(--error);
+}
+
+.password {
+  position: relative;
+}
+
+.password input {
+  padding-right: 4.5rem;
+}
+
+.reveal,
+.textButton {
+  min-height: 44px;
+  color: var(--forest);
+  font-size: .85rem;
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: .18em;
+  cursor: pointer;
+}
+
+.reveal {
+  position: absolute;
+  inset: 1px 1px 1px auto;
+  min-width: 3.8rem;
+  border-radius: .45rem;
+}
+
+.fields .textButton {
+  justify-self: start;
+  margin-block: -.45rem;
+}
+
+.primary,
+.google,
+.guest {
+  display: flex;
+  min-height: 46px;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--forest);
+  border-radius: .5rem;
+  padding: .55rem .9rem;
+  text-align: center;
+  font-size: .9rem;
+  font-weight: 650;
+  line-height: 1.3;
+  cursor: pointer;
+}
+
+.primary {
+  background: var(--forest);
+  color: var(--surface);
+}
+
+.primary:hover:not(:disabled) {
+  background: #304c3e;
+}
+
+.primary:disabled {
+  cursor: wait;
+  opacity: .65;
+}
+
+.google,
+.guest {
+  background: var(--surface);
+  color: var(--forest);
+}
+
+.google {
+  margin-top: .65rem;
+}
+
+.google:hover,
+.guest:hover {
+  background: var(--sand);
+}
+
+.error,
+.entry .error {
+  margin-top: .35rem;
+  color: var(--error);
+  font-size: .8rem;
+  line-height: 1.45;
+}
+
+.notice {
+  margin-top: .8rem;
+  border-left: 2px solid var(--brass);
+  padding: .55rem .7rem;
+  background: var(--cream);
+  font-size: .85rem;
+  line-height: 1.5;
+}
+
+.switchView {
+  border-top: 1px solid var(--border);
+  padding-top: .35rem;
+}
+
+.entry {
+  background: #efe7d9;
+}
+
+.entry h2 {
+  max-width: 12ch;
+  font-size: clamp(2.15rem, 6vw, 3.25rem);
+}
+
+.entryActions {
+  display: grid;
+  gap: .65rem;
+}
+
+.entryActions,
+.entry > .primary {
+  margin-top: 1.25rem;
+}
+
+.demoForm {
+  min-width: 0;
+}
+
+.page :focus-visible {
+  outline: 2px solid #376450;
+  outline-offset: 3px;
+}
+
+@media (min-width: 48rem) {
+  .page {
+    padding-inline: max(2rem, env(safe-area-inset-left)) max(2rem, env(safe-area-inset-right));
+  }
+
+  .layout {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr);
+    gap: clamp(1.25rem, 4.5vw, 4rem);
+  }
+}

@@ -2,12 +2,14 @@ import "server-only";
 
 import { connectionRequests, events, profiles, type Domain, type LookingFor } from "../fixtures/demo-data";
 import { requestPair, validRequestNote } from "../privacy/requests";
+import { isAvatarId } from "../profile/avatars";
 import type { AttendanceSelection, DemoState } from "./repository";
 
 const stateFields = [
   "activePersonaId", "attendanceOverrides", "discoverabilityOverrides",
   "contactSharingOverrides", "newRequests", "requestStatusOverrides",
 ] as const;
+const stateFieldsWithAvatars = [...stateFields, "avatarOverrides"] as const;
 
 const attendanceFields = ["user_id", "event_id", "status", "visibility", "looking_for"];
 const removalFields = ["user_id", "event_id", "status"];
@@ -78,7 +80,12 @@ function attendanceKey(userId: string, eventId: string) {
 }
 
 export function isDemoState(value: unknown): value is DemoState {
-  if (!hasFields(value, stateFields) || !isDemoPersonaId(value.activePersonaId)
+  if (!isRecord(value)) return false;
+  const hasAvatars = Object.hasOwn(value, "avatarOverrides");
+  if (!hasFields(value, hasAvatars ? stateFieldsWithAvatars : stateFields)
+    || (hasAvatars && (!isRecord(value.avatarOverrides)
+      || !Object.entries(value.avatarOverrides).every(([id, avatar]) => isDemoPersonaId(id) && isAvatarId(avatar))))
+    || !isDemoPersonaId(value.activePersonaId)
     || !Array.isArray(value.attendanceOverrides) || !Array.isArray(value.newRequests)
     || !isPreferenceMap(value.discoverabilityOverrides) || !isPreferenceMap(value.contactSharingOverrides)
     || !isRecord(value.requestStatusOverrides)) return false;

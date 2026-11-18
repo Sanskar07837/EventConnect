@@ -6,10 +6,6 @@ import { resetDemoAction, startDemoAction, switchPersonaAction } from "../../app
 
 type Persona = { id: string; label: string };
 
-const buttonStyle = "min-h-11 rounded-md px-4 py-2 text-sm font-semibold";
-const primaryStyle = `${buttonStyle} bg-emerald-900 text-white hover:bg-emerald-800 disabled:opacity-60`;
-const secondaryStyle = `${buttonStyle} border border-stone-400 bg-white hover:bg-stone-100 disabled:opacity-60`;
-
 export default function PersonaSwitcher({ current, personas }: {
   current: Persona | null;
   personas: Persona[];
@@ -44,12 +40,12 @@ export default function PersonaSwitcher({ current, personas }: {
   }, "");
 
   return (
-    <section aria-label="Demo controls" className="mb-8 rounded-lg border border-stone-300 bg-white px-4 py-3 sm:px-5">
+    <section aria-label="Demo controls" className="app-card mb-8 px-4 py-3 sm:px-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-sm font-semibold">{current ? `Browsing as ${current.label}` : "Browsing as a guest"}</p>
-          <p className="mt-1 text-sm text-stone-600">
-            {current ? "Fictional demo persona" : "Try a fictional demo persona to change how you participate."}
+          <p className="app-muted mt-1 text-sm">
+            {current ? <span className="app-badge">Fictional demo persona</span> : "Try a fictional demo persona to change how you participate."}
           </p>
         </div>
         {current ? (
@@ -63,26 +59,26 @@ export default function PersonaSwitcher({ current, personas }: {
                 name="personaId"
                 defaultValue={current.id}
                 disabled={pending}
-                className="min-h-11 rounded-md border border-stone-400 bg-white px-3 text-sm disabled:opacity-60"
+                className="app-input"
               >
                 {personas.map(({ id, label }) => <option key={id} value={id}>{label}</option>)}
               </select>
-              <button className={primaryStyle} type="submit" disabled={pending}>Switch persona</button>
+              <button className="app-button app-button-primary" type="submit" disabled={pending}>Switch persona</button>
             </form>
             <form action={submit}>
               <input type="hidden" name="operation" value="reset" />
-              <button className={secondaryStyle} type="submit" disabled={pending}>Reset demo</button>
+              <button className="app-button" type="submit" disabled={pending}>Reset demo</button>
             </form>
           </div>
         ) : (
           <form action={submit}>
             <input type="hidden" name="operation" value="start" />
-            <button className={primaryStyle} type="submit" disabled={pending}>Try demo as Karthik</button>
+            <button className="app-button app-button-primary" type="submit" disabled={pending}>Try demo as Karthik</button>
           </form>
         )}
       </div>
-      {pending && <p role="status" className="mt-2 text-sm text-stone-600">Updating demo…</p>}
-      {error && <p role="alert" className="mt-2 text-sm font-medium text-red-800">{error}</p>}
+      {pending && <p role="status" className="app-feedback mt-2">Updating demo…</p>}
+      {error && <p role="alert" className="app-feedback mt-2">{error}</p>}
     </section>
   );
 }

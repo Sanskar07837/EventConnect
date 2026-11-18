@@ -1,6 +1,6 @@
 # ASSETS.md — EventConnect landing-page image register
 
-This register is authoritative for assets in `public/landing/`. Every file in that directory must map to one slot below.
+This register is authoritative for assets in `public/landing/`. The original WebP pairs map to the numbered slots below. The redesign additions are listed under Landing v2.
 
 ## File and source rules
 
@@ -75,3 +75,24 @@ All 12 slot images were generated with the Gemini image generator. Each has a vi
 | 12 | 800 + 1600 WebP | AI-generated | Gemini image generator | Pending tier/account verification | Generic map-pin motif. |
 
 **Shipping gate:** before public release, verify that the terms for the exact Gemini product/account tier used allow the intended website and hackathon/public-demo use. Record the verification date and applicable terms. Until then, the imagery is approved for internal prototyping only, not asserted as licence-cleared.
+
+## Landing v2
+
+The ten candidate WebPs were supplied for this redesign. The four visible provenance marks listed below remain visible in the art direction. The six other candidates were supplied without source or licence documentation, and absence of a visible mark establishes neither authorship nor permission. Verify rights before public release. The local video and supplemental screenshots are composition references with no runtime use.
+
+| Asset in `public/landing/candidates/` | Source and provenance | Runtime scene and crop |
+|---|---|---|
+| `bengaluru-skyline.webp` | Supplied WebP, no visible sparkle | Closing upper-left, desktop only. Centre the skyline and retain some evening sky. |
+| `chess-community-overhead.webp` | Supplied Gemini illustration, lower-right sparkle | Chess upper-left on desktop and upper print on mobile. Anchor right/bottom to retain the mark while framing the board and hands. The hand-detail candidate complements this overhead view. |
+| `chess-hand-move.webp` | Supplied WebP, no visible sparkle | Chess lower-right and mobile detail. Centre on the hand and front rank of pieces. |
+| `conference-auditorium.webp` | Supplied WebP, no visible sparkle | Building and community lower-left inserts, desktop only. Keep the audience and stage visible. |
+| `library-reading-room.webp` | Supplied WebP, no visible sparkle | Chess lower-left, desktop only. Community lower-right on desktop and lower print on mobile. Keep the window and ceiling lines readable. |
+| `metro-platform.webp` | Supplied Gemini illustration, lower-right sparkle | Opening lower-right on desktop and lower print on mobile. Anchor right/bottom to retain the train, platform and mark. |
+| `vidhana-soudha-golden-hour.webp` | Supplied Gemini illustration, lower-right sparkle | Opening upper-left on desktop and upper print on mobile. Anchor right/bottom, with a taller frame for the dome, sky and marked foreground. The skyline comes from a separate viewpoint. |
+| `vintage-world-map.webp` | Supplied WebP, no visible sparkle | Community upper-right and mobile upper print. Frame the paper map and keep its orientation legible. |
+| `workshop-brainstorm.webp` | Supplied WebP, no visible sparkle | Building lower-right on desktop and lower print on mobile. Bias the crop toward the notes and activity at the board. |
+| `workshop-idea-wall.webp` | Supplied Gemini illustration, lower-right sparkle | Building upper-left and mobile upper print. Anchor right/bottom to preserve the mark and keep the note wall in view. This detail complements the separate brainstorm scene. |
+
+The opening desktop collage uses the original 1600px slot 07 glasshouse at upper right, slot 09 park at lower left, and slot 05 filter coffee as the overlapping inset. Right/bottom framing preserves the visible provenance, and the park sits in front of the coffee inset. Mobile uses only the opening Vidhana Soudha and metro candidates.
+
+The full-bleed workshop uses the original slot 10 desktop/mobile pair to match the reference video's audience-and-whiteboard framing. Desktop keeps the right/bottom crop. Mobile centres the board and backs of attendees. The 24 original slots and ten supplied candidate files stay intact. `public/landing/cursor-glass.svg` is original interface artwork for this redesign.

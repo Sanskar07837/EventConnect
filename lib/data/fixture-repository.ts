@@ -15,6 +15,7 @@ import {
 import { canRevealContact } from "../privacy/contact";
 import { attendsEvent, canDiscoverAttendee } from "../privacy/discovery";
 import { canTransitionRequest, isRequestTransition, requestLimitReason, requestPair, validRequestNote } from "../privacy/requests";
+import { isAvatarId } from "../profile/avatars";
 import { mutateDemoSession, readDemoSession } from "../server/demo-session";
 import { profilePrivate } from "../server/profile-private";
 import { isAttendanceSelection, isDemoPersonaId, lookingForOptions } from "./demo-state";
@@ -125,6 +126,21 @@ export const fixtureRepository: EventRepository = {
       ...profile,
       discoverable: state.discoverabilityOverrides[profile.id] ?? profile.discoverable,
       share_contact_on_accept: sharesContact(state, profile.id),
+      avatarId: state.avatarOverrides?.[profile.id] ?? null,
+      neighbourhoodLabel: neighbourhoods.find(({ slug }) => slug === profile.neighbourhood)?.name ?? null,
+      eventPreferences: effectiveAttendance(state).flatMap((record) => {
+        if (record.user_id !== profile.id) return [];
+        const event = events.find(({ id, is_junior_event }) => id === record.event_id && !is_junior_event);
+        if (!event) return [];
+        return [{
+          eventId: event.id,
+          title: event.title,
+          status: record.status,
+          isPublic: record.visibility === "public",
+          intents: lookingForOptions(event.domain).filter(({ value }) => record.looking_for.some((intent) => intent === value))
+            .map(({ label }) => label),
+        }];
+      }),
     };
   },
 
@@ -148,13 +164,21 @@ export const fixtureRepository: EventRepository = {
     const intents = lookingForOptions(event.domain);
     const requestedPairs = new Set(effectiveRequests(state).map((request) =>
       requestPair(request.event_id, request.from_user_id, request.to_user_id)));
+    const normalizeInterest = (interest: string) => interest.trim().toLowerCase();
+    const viewerInterests = new Set(viewer.interests.map(normalizeInterest));
     const attendees: Attendee[] = [];
     for (const record of atEvent) {
       const target = discoverTarget(state, record.user_id, event, atEvent);
       if (!target) continue;
       attendees.push({
         id: target.id,
+        avatarId: state.avatarOverrides?.[target.id] ?? null,
         label: target.display_name,
+        bio: target.bio,
+        neighbourhood: neighbourhoods.find(({ slug }) => slug === target.neighbourhood)?.name ?? null,
+        interests: target.interests,
+        skills: target.skills,
+        sharedInterests: target.interests.filter((interest) => viewerInterests.has(normalizeInterest(interest))),
         status: record.status,
         intents: intents.filter(({ value }) => record.looking_for.some((intent) => intent === value))
           .map(({ label }) => label),
@@ -164,6 +188,7 @@ export const fixtureRepository: EventRepository = {
 
     return {
       access: "attending", event: summary, personaId: viewer.id, attendees,
+      sharesOwnContact: sharesContact(state, viewer.id),
       attendance: {
         status: ownAttendance.status, visibility: ownAttendance.visibility, looking_for: ownAttendance.looking_for,
       },
@@ -203,9 +228,10 @@ export const fixtureRepository: EventRepository = {
     });
   },
 
-  async getContactForRequest(requestId) {
+  async getContactForRequest(requestId, expectedPersonaId) {
     const state = await readDemoSession();
-    if (!state) return null;
+    // Bind this read to the persona for whom the page built its request list.
+    if (!state || state.activePersonaId !== expectedPersonaId) return null;
 
     const request = effectiveRequests(state).find(({ id }) => id === requestId);
     if (!request) return null;
@@ -234,11 +260,10 @@ export const fixtureRepository: EventRepository = {
         note: request.note,
         createdAt: request.created_at,
         counterpart: target ? { display_name: target.display_name, bio: target.bio } : null,
-        contact: connectionContact(state, request, event),
       });
     }
     requests.sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
-    return { personaId, requests };
+    return { personaId, sharesOwnContact: sharesContact(state, personaId), requests };
   },
 
   async sendRequest(eventId, targetId, note, expectedPersona) {
@@ -283,5 +308,17 @@ export const fixtureRepository: EventRepository = {
     return mutateConnection(expectedPersona, (state, actor) => ({
       ...state, contactSharingOverrides: { ...state.contactSharingOverrides, [actor]: enabled },
     }));
+  },
+
+  async changeAvatar(avatarId, expectedPersona) {
+    if (avatarId !== null && !isAvatarId(avatarId)) return { ok: false, reason: "conflict" };
+    return mutateDemoSession((state) => {
+      const actor = state.activePersonaId;
+      if (!isDemoPersonaId(actor) || actor !== expectedPersona) return null;
+      const avatarOverrides = { ...state.avatarOverrides };
+      if (avatarId === null) delete avatarOverrides[actor];
+      else avatarOverrides[actor] = avatarId;
+      return { ...state, avatarOverrides };
+    });
   },
 };

@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import PersonaSwitcher from "../../components/ui/PersonaSwitcher";
 import { fixtureRepository } from "../../lib/data/fixture-repository";
+import "./app-theme.css";
 
 const navigation = [
   { href: "/explore", label: "Explore" },
@@ -17,20 +18,20 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   const current = profile ? personas.find(({ id }) => id === profile.id) ?? null : null;
 
   return (
-    <>
-      <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:z-20 focus:bg-white focus:p-3">
+    <div className="app-shell">
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:z-20 app-skip-link focus:p-3">
         Skip to content
       </a>
-      <header className="border-b border-stone-300">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6">
+      <header className="app-header">
+        <div className="app-container app-header-inner">
           {/* A document navigation prevents the private route from entering same-document history. */}
           {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-          <a className="font-serif text-2xl" href="/">EventConnect</a>
-          <nav aria-label="Main navigation" className="fixed inset-x-0 bottom-0 z-10 border-t border-stone-300 bg-white sm:static sm:border-0 sm:bg-transparent">
-            <ul className="flex flex-wrap justify-evenly sm:gap-4">
+          <a className="app-brand" href="/">EventConnect</a>
+          <nav aria-label="Main navigation" className="app-nav">
+            <ul className="app-nav-list">
               {navigation.map(({ href, label }) => (
                 <li key={href}>
-                  <a className="block px-2 py-3 text-sm font-medium hover:underline" href={href}>
+                  <a className="app-nav-link" href={href}>
                     {label}
                   </a>
                 </li>
@@ -39,7 +40,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
           </nav>
         </div>
       </header>
-      <main id="main-content" tabIndex={-1} className="mx-auto max-w-5xl px-4 pt-8 pb-24 sm:px-6">
+      <main id="main-content" tabIndex={-1} className="app-container app-main">
         {demoEnabled && (
           <PersonaSwitcher
             current={current ? { id: current.id, label: current.display_name } : null}
@@ -47,10 +48,10 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
           />
         )}
         {children}
-        <footer className="mt-12 border-t border-stone-300 pt-4 text-sm text-stone-600">
+        <footer className="app-footer">
           Sample events and demo personas are fictional. Demo changes are stored temporarily for this browser.
         </footer>
       </main>
-    </>
+    </div>
   );
 }
