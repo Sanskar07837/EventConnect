@@ -1,52 +1,211 @@
-# EventConnect starter context (v4.1)
+# EventConnect
+### Discover Events. Meet People. Build Connections.
 
-This folder is a **Codex starter pack**, not a runnable Next.js application yet.
+**Product Overview | User Guide | Technical Overview**
 
-## Read these files first
-1. `SPEC.md` — authoritative product and implementation requirements.
-2. `AGENTS.md` — persistent coding, design, privacy and workflow instructions.
-3. `ASSETS.md` — landing image slots, variants and provenance notes.
-4. `TEST_PLAN.md` — acceptance and privacy test cases.
-5. `PRE_CODEX_AUDIT.md` — what was reviewed and corrected in v4.1.
+## 1. Introduction
 
-## Included demo data
-- `lib/fixtures/demo-data.ts` — public fictional event/profile/attendance/request fixtures.
-- `lib/server/profile-private.ts` — private fictional contact handles; server-only.
-- `public/landing/` — 12 landing image slots with 800px and 1600px WebP variants.
-- `.env.example` — server-only demo and Supabase configuration template.
-- `supabase/migrations/20261118000000_demo_session_state.sql` — demo-state table, grants and atomic write function.
+EventConnect is a platform designed to make event participation more meaningful by connecting people through shared interests and experiences.
 
-## Local setup after Codex scaffolds the application
-1. Open this folder in VS Code.
-2. Read `SPEC.md` and `AGENTS.md` in Codex.
-3. Ask Codex to plan the scaffold before making changes.
-4. Once `package.json` exists, use npm only:
-   - `npm.cmd install`
-   - `npm.cmd run dev`
-   - `npm.cmd run lint`
-   - `npx.cmd tsc --noEmit`
-   - `npm.cmd run build`
-5. Copy `.env.example` to `.env.local`.
-6. Generate `DEMO_SESSION_SECRET` locally:
-   `node -e "console.log(require('node:crypto').randomBytes(32).toString('base64url'))"`
-7. Never commit `.env.local`.
+Traditional event platforms primarily focus on event discovery, registration, and participation. However, opportunities to discover and connect with other attendees often remain limited.
 
-## Supabase setup for the judge demo
+EventConnect addresses this gap by bringing event discovery and people discovery together in one platform.
 
-1. Use an authorized Supabase project with the Data API enabled and the `public` schema exposed to that API.
-2. Apply the checked-in migration once, using the project's migration workflow or SQL Editor. It enables RLS, revokes browser access and grants the server role table reads, inserts and deletes plus execution of the atomic write function.
-3. Set `DEMO_MODE=true`, `DEMO_SESSION_SECRET`, `SUPABASE_URL` (the project API URL), and `SUPABASE_SECRET_KEY` (the project's secret API key) in the server environment. The key bypasses RLS. Keep it out of browser bundles, logs and version control. The demo uses no Supabase Auth.
-4. Before release, verify browser-role access is denied and run the concurrency checks in `TEST_PLAN.md`. Arrange periodic cleanup of rows where `expires_at <= now()` under a privileged database role. Session access expires after 12 hours regardless of cleanup timing.
+Users can explore events, join communities of participants, discover other attendees, send connection requests, and build relationships that extend beyond the event.
 
-The signed cookie contains only the opaque ID and timestamps. PostgreSQL stores its hash and mutable state for that browser. Each write checks the stored revision atomically. On a conflict the server reloads current state and reruns the relevant authorization and business rules.
+**Our vision:** Transform events from one-time experiences into opportunities for lasting connections.
 
-## Judge walkthroughs
+## 2. Core Features
 
-- Fresh journey: start as Karthik, join `ev-chess-01`, find Asha, and send a request with a fictional note. Switch to Asha and accept. Switch back to Karthik and verify that Asha's shared contact is displayed.
-- Seeded acceptance: start with the existing Karthik → Meera pending request and accept as Meera. For the no-contact contrast, view the accepted Vikram → Rohan request as Vikram.
+### 2.1 Event Discovery
+Explore events across different categories and find activities that match your interests.
 
-## Demo data warning
-All seeded events, profiles, attendance, aggregate counts and contact handles are fictional. Demo state is per browser and temporary. It is not a production authentication or persistence system.
+Users can view event descriptions, schedules, locations, and participant information.
 
-## Important
-The private fixture stays server-only. Connections renders a single authorized handle as server-rendered text after the request and sharing checks. Keep handles out of browser-facing APIs, client component props, client stores, cookies and database state.
+### 2.2 Event Participation
+Join events that interest you and become part of their participant community.
+
+Event participation also creates an opportunity to discover other attendees and interact with people who share similar interests.
+
+### 2.3 People Discovery
+Discover individuals participating in the same events.
+
+Profiles provide an overview of participants and the information they choose to share, helping users identify common interests and potential connections.
+
+### 2.4 Connection Requests
+Send personalized connection requests to other participants.
+
+Users can include a short introductory note, while recipients retain control over whether to accept or decline the request.
+
+### 2.5 Connections
+Manage accepted connections and incoming requests from a centralized section.
+
+This allows users to keep track of relationships established through the platform.
+
+### 2.6 Controlled Contact Sharing
+Contact information is made available only when the applicable connection and sharing conditions have been satisfied.
+
+This provides an additional layer of control over how personal information is shared.
+
+## 3. How EventConnect Works
+
+The platform follows a simple user journey:
+
+1. **Discover:** Browse events that match your interests.
+2. **Participate:** Join an event and explore its community.
+3. **Connect:** Discover attendees and send connection requests.
+4. **Interact:** Accept or decline incoming requests.
+5. **Continue:** Access shared contact information when authorized.
+
+The process connects event participation with relationship building through a single experience.
+
+## 4. Platform Architecture
+
+EventConnect follows a modern web application architecture that separates the user interface, application logic, and data storage.
+
+### 4.1 Technology Stack
+
+| Technology | Purpose |
+|---|---|
+| Next.js | Application framework and server-side rendering |
+| React | Component-based user interface |
+| TypeScript | Type safety and maintainable application code |
+| Tailwind CSS | Responsive styling and UI development |
+| Supabase | PostgreSQL database and backend infrastructure |
+| PostgreSQL | Structured data storage and database operations |
+
+*The technologies listed describe the planned application stack; the final implementation should be verified against the completed project.*
+
+### 4.2 Architecture Overview
+
+The application is organized around three primary layers:
+
+**Presentation Layer**
+- Built with Next.js and React.
+- Responsible for the interface and user interactions.
+- Provides event discovery, participant profiles, connection management, and navigation.
+
+**Application Layer**
+- Handles application workflows and business rules.
+- Processes event participation and connection requests.
+- Validates permissions before allowing sensitive operations.
+- Controls access to private contact information.
+
+**Data Layer**
+- Uses Supabase and PostgreSQL.
+- Stores structured application and session data.
+- Supports database operations and consistency checks.
+- Applies database-level access restrictions.
+
+### 4.3 Application Flow
+
+The general interaction between the platform components follows this structure:
+
+```text
+          USER
+            |
+            v
+      Next.js Interface
+            |
+            v
+     Application Logic
+            |
+       +----+----+
+       |         |
+       v         v
+  Event and   Connection
+  Profile     Management
+  Operations  Operations
+       |         |
+       +----+----+
+            |
+            v
+       Supabase
+            |
+            v
+        PostgreSQL
+```
+
+## 5. How the Connection System Works
+
+One of the central features of EventConnect is its connection-request workflow.
+
+A connection follows a controlled sequence:
+
+**Step 1 – Request Creation**
+
+A user selects another participant and sends a connection request, optionally including a personal note.
+
+**Step 2 – Request Review**
+
+The recipient receives the request and can decide whether to accept it.
+
+**Step 3 – Connection Acceptance**
+
+When the recipient accepts, the application updates the connection status.
+
+**Step 4 – Contact Authorization**
+
+The application checks whether the conditions for sharing contact information have been satisfied.
+
+**Step 5 – Contact Display**
+
+If authorized, the relevant contact information is displayed to the connected user.
+
+This approach ensures that contact sharing is not automatically associated with simply viewing someone's profile.
+
+## 6. Data Management and Privacy
+
+EventConnect distinguishes between information intended for general application use and information that requires additional access restrictions.
+
+### Public Application Data
+Examples include:
+- Event details.
+- Public profile information.
+- Attendance information.
+- Aggregate event statistics.
+
+### Restricted Information
+Examples include:
+- Private contact handles.
+- Information subject to connection-based sharing conditions.
+
+Private information is handled through server-side operations rather than being freely exposed to the browser.
+
+The platform uses authorization checks to determine whether a user is permitted to access particular information.
+
+## 7. Technical Highlights
+
+The application incorporates several technical considerations:
+
+- **Server-side rendering:** Supports rendering application content on the server using Next.js.
+- **Type safety:** TypeScript helps maintain consistency across application components and data structures.
+- **Relational data management:** PostgreSQL provides structured storage for events, profiles, and connection-related information.
+- **Row Level Security:** Supabase database policies restrict unauthorized data access.
+- **Server-side authorization:** Sensitive operations are validated before private information is returned.
+- **Session management:** The demo uses signed, temporary browser-specific sessions.
+- **Atomic database updates:** Revision-based checks and atomic writes help prevent conflicting concurrent updates.
+
+## 8. Current Project Scope
+
+The current version is designed as a hackathon demonstration with fictional sample data.
+
+It demonstrates the main EventConnect experience, including:
+
+- Event discovery and participation.
+- Participant discovery.
+- Connection request creation and acceptance.
+- Connection management.
+- Conditional contact sharing.
+
+The demonstration uses temporary, browser-specific sessions rather than production user authentication.
+
+A production release would require additional capabilities such as persistent user accounts, identity verification, notification infrastructure, and expanded deployment and security controls.
+
+## 9. Conclusion
+
+EventConnect brings together two important aspects of attending an event: discovering experiences and discovering people.
+
+By combining event participation, participant discovery, and controlled connection sharing, the platform creates an environment where interactions can continue beyond the event itself.
+
+**EventConnect — Where Events Become Connections.**
