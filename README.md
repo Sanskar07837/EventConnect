@@ -1,5 +1,4 @@
 # EventConnect
-### Discover Events. Meet People. Build Connections.
 
 **Product Overview | User Guide | Technical Overview**
 
